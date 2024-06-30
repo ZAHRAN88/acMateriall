@@ -1,0 +1,58 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id    Int     @id @default(autoincrement())
+  email String  @unique
+  name  String?
+  posts Post[]
+}
+
+model Post {
+  id        Int     @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean @default(false)
+  author    User    @relation(fields: [authorId], references: [id])
+  authorId  Int
+}
+
+// Course model
+model Course {
+  id             Int     @id @default(autoincrement())
+  courseName     String
+  playlist       String
+  playlist2      String
+  drive          String
+  importantNotes String?
+  semester       String?
+  weeks          Week[] // Define the relation to Week model
+}
+
+// Week model with embedded resource
+model Week {
+  id        Int        @id @default(autoincrement())
+  weekName  String
+  resources Resource[]
+  course    Course     @relation(fields: [courseId], references: [id])
+  courseId  Int // Define the opposite relation to Course model
+}
+
+// Resource model embedded in Week
+model Resource {
+  id     Int    @id @default(autoincrement())
+  icon   String
+  text   String
+  link   String
+  week   Week   @relation(fields: [weekId], references: [id])
+  weekId Int
+}
