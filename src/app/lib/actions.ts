@@ -22,21 +22,30 @@ const createPost = async (formData: FormData) => {
     })
 
 }
-const addCourse = async (formData: FormData) => {
+type CourseState = "Course added successfully" | "Error adding course"| null;
 
-    await prisma.course.create({
-        data: {
-            courseName: formData.get('courseName') as string,
-            playlist: formData.get('list1') as string,
-            playlist2: formData.get('list2') as string,
-            drive: formData.get('drive') as string,
-            importantNotes: formData.get('importantNotes') as string,
-            semester: formData.get('semesterNumber') as string,
 
-        }
-    })
+const addCourse = async (state: CourseState, formData: FormData): Promise<CourseState> => {
+    try {
+        await new Promise((resolve) => setTimeout(resolve, 2000)); 
+        await prisma.course.create({
+            data: {
+                courseName: formData.get('courseName') as string,
+                playlist: formData.get('list1') as string,
+                playlist2: formData.get('list2') as string,
+                drive: formData.get('drive') as string,
+                importantNotes: formData.get('importantNotes') as string,
+                semester: formData.get('semesterNumber') as string,
+            }
+        });
 
-}
+        return "Course added successfully";
+    } catch (error) {
+        console.error(error);
+        return "Error adding course";
+    }
+};
+    
 const addWeek = async (formData: FormData) => {
     await prisma.week.create({
         data: {
@@ -45,16 +54,24 @@ const addWeek = async (formData: FormData) => {
         }
     })
 }
-const addResource = async (formData: FormData) => {
-    await prisma.resource.create({
-        data: {
-            icon: formData.get('icon') as string,
-            text: formData.get('text') as string,
-            link: formData.get('link') as string,
-            weekId: parseInt(formData.get('weekId') as string)
-        }
-    })
-    revalidatePath(`/dashboard/${formData.get('weekId')as string}`)
+type ResourceState = "Resource added successfully" | "Error adding resource" | null;
+const addResource = async (state:ResourceState ,formData: FormData):Promise<ResourceState> => {
+    try{
+        await new Promise((resolve) => setTimeout(resolve, 2000)); 
+        await prisma.resource.create({
+            data: {
+                icon: formData.get('icon') as string,
+                text: formData.get('text') as string,
+                link: formData.get('link') as string,
+                weekId: parseInt(formData.get('weekId') as string)
+            }
+        })
+        revalidatePath(`/dashboard/${formData.get('weekId') as string}`)
+        return "Resource added successfully";
+    }catch(e){
+        return "Error adding resource";
+    }
+  
 }
 const getCourse = async (id: number) => {
     return await prisma.course.findUnique({
@@ -83,7 +100,7 @@ const getResources = async (weekId: string) => {
         }
     });
 }
-async function updateResource( formData: FormData) {
+async function updateResource(formData: FormData) {
     await prisma.resource.update({
         where: {
             id: parseInt(formData.get('id') as string)
@@ -93,9 +110,9 @@ async function updateResource( formData: FormData) {
             link: formData.get('link') as string,
         }
     })
-   revalidatePath(`/dashboard/${formData.get('id')as string}`)
-  }
-  const deleteResource = async (id: string) => {
+    revalidatePath(`/dashboard/${formData.get('id') as string}`)
+}
+const deleteResource = async (id: string) => {
     await prisma.resource.delete({
         where: {
             id: parseInt(id)
@@ -138,4 +155,4 @@ const courseResources = async (courseId: string) => {
     return totalResources;
 }
 
-export { addUser, getResources, createPost, addCourse, addWeek, addResource, getWeeks, getCourse, getCourses,updateResource ,deleteResource,getSemesterCourses,courseResources}
+export { addUser, getResources, createPost, addCourse, addWeek, addResource, getWeeks, getCourse, getCourses, updateResource, deleteResource, getSemesterCourses, courseResources }
